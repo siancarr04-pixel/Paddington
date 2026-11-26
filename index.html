@@ -1,0 +1,602 @@
+<title>Season's Speakings Quiz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,800;1,9..144,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap">
+<style>
+/* Layout: a winter night stage — pine-green ground with falling snow, a string of festive lights,
+   snow-white cards with holly-red and pine-green accents; question left, timing light + scoreboard right.
+   One deliberate festive theme for both host themes. */
+:root {
+  --pine: #0f3b2c;
+  --pine-deep: #0a2a1f;
+  --holly: #1e7a4c;
+  --holly-soft: #e3f1e8;
+  --berry: #c8262c;
+  --berry-deep: #9c1b22;
+  --snow: #fcfbf7;
+  --frost: #dcebe3;
+  --ink: #133a2c;
+  --ink-soft: #4d6b5e;
+  --on-pine: #fcfbf7;
+  --on-pine-soft: #bcd6c7;
+  --lamp-green: #3cbf83;
+  --lamp-amber: #f2b33d;
+  --lamp-red: #ff3b30;
+  --display: "Fraunces", Georgia, "Times New Roman", serif;
+  --body: "DM Sans", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  color: var(--on-pine); font-family: var(--body); font-size: 16px; line-height: 1.5;
+  background: radial-gradient(ellipse at 50% -10%, var(--holly) 0%, var(--pine) 45%, var(--pine-deep) 100%) fixed, var(--pine);
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--berry); outline-offset: 2px; }
+
+#snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+/* String of lights across the top */
+.lights { position: relative; z-index: 2; height: 46px; overflow: hidden;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.lights svg { display: block; width: 100%; height: 46px; }
+.bulb { animation: twinkle 2.4s ease-in-out infinite; }
+@keyframes twinkle { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+
+.app {
+  position: relative; z-index: 1;
+  max-width: 1320px; margin: 0 auto;
+  display: grid; grid-template-columns: minmax(0, 1fr) 330px; grid-template-rows: auto 1fr;
+  gap: 20px 28px;
+  padding-block: 8px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.top { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 24px; padding-bottom: 18px; border-bottom: 2px dashed color-mix(in srgb, var(--snow) 35%, transparent); }
+.brand { display: flex; align-items: center; gap: 14px; }
+.holly { width: 64px; height: 52px; flex: none; }
+.eyebrow { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--on-pine-soft); font-weight: 700; }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(2rem, 4vw, 3rem); line-height: 1; margin: 2px 0 0; color: var(--snow); }
+h1 em { font-style: italic; color: var(--snow); text-decoration: underline wavy var(--berry); text-decoration-thickness: 3px; text-underline-offset: 8px; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tab { background: color-mix(in srgb, var(--pine-deep) 70%, transparent); border: 1px solid color-mix(in srgb, var(--snow) 30%, transparent); border-radius: 999px; padding: 6px 14px; font-size: 14px; color: var(--on-pine-soft); display: inline-flex; gap: 8px; align-items: center; }
+.tab .n { font-family: var(--display); font-weight: 800; color: var(--snow); }
+.tab:hover { color: var(--snow); border-color: var(--snow); }
+.tab[aria-current="true"] { background: var(--berry); color: var(--snow); border-color: var(--berry); }
+
+.stage { min-width: 0; display: grid; align-content: start; gap: 20px; }
+.meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; align-items: center; }
+.round-title { font-family: var(--display); font-weight: 800; font-size: 1.3rem; color: var(--snow); margin: 0; }
+.round-title span { color: var(--on-pine-soft); font-weight: 500; font-family: var(--body); font-size: .95rem; margin-left: 8px; }
+.dots { display: flex; gap: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; background: color-mix(in srgb, var(--snow) 25%, transparent); }
+.dot.done { background: var(--holly); box-shadow: 0 0 0 2px var(--snow) inset; }
+.dot.now { background: var(--berry); box-shadow: 0 0 10px var(--berry); }
+
+.card { background: var(--snow); color: var(--ink); border-radius: 20px; padding: clamp(18px, 3vw, 30px); box-shadow: 0 18px 40px -20px rgba(0,0,0,.55); position: relative; }
+.card::after { /* snow cap along the card top */
+  content: ""; position: absolute; left: 18px; right: 18px; top: -7px; height: 14px;
+  background: radial-gradient(circle at 10px 10px, var(--snow) 9px, transparent 10px) 0 0 / 26px 14px repeat-x;
+}
+.qnum { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--berry); font-weight: 700; }
+.qtext { font-family: var(--display); font-weight: 800; font-size: clamp(1.6rem, 3.2vw, 2.5rem); line-height: 1.15; margin: 6px 0 0; text-wrap: balance; max-width: 30ch; color: var(--ink); }
+.options { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.opt { display: flex; align-items: center; gap: 16px; background: var(--snow); color: var(--ink); border: 2px solid var(--frost); border-radius: 16px; padding: 14px 18px; font-size: clamp(1.05rem, 1.7vw, 1.35rem); font-weight: 500; min-width: 0; transition: opacity .25s, border-color .25s, background .25s, transform .25s; }
+/* Option letters are baubles: a coloured ball with a little cap */
+.bauble { flex: none; position: relative; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 800; color: var(--snow); background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.55) 0 5px, transparent 6px), var(--berry); margin-top: 6px; }
+.bauble::before { content: ""; position: absolute; top: -7px; left: 50%; width: 12px; height: 8px; transform: translateX(-50%); background: #c9c3b4; border-radius: 3px 3px 1px 1px; }
+.opt:nth-child(2) .bauble { background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.55) 0 5px, transparent 6px), var(--holly); }
+.opt:nth-child(3) .bauble { background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.5) 0 5px, transparent 6px), var(--berry-deep); }
+.opt:nth-child(4) .bauble { background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.55) 0 5px, transparent 6px), var(--pine); }
+.opt.correct { background: var(--holly); color: var(--snow); border-color: var(--snow); transform: scale(1.02); box-shadow: 0 0 0 4px var(--berry); }
+.opt.correct .bauble { background: var(--snow); color: var(--holly); }
+.opt.dim { opacity: .45; }
+.fact { display: flex; gap: 14px; align-items: flex-start; background: var(--snow); color: var(--ink); border-radius: 16px; padding: 14px 18px; font-size: 1.05rem; max-width: 72ch; border-left: 10px solid transparent; border-image: repeating-linear-gradient(45deg, var(--berry) 0 8px, var(--snow) 8px 16px) 10; }
+.fact svg { flex: none; width: 26px; height: 26px; margin-top: 2px; }
+.fact b { color: var(--berry); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { border: 2px solid color-mix(in srgb, var(--snow) 55%, transparent); background: color-mix(in srgb, var(--pine-deep) 60%, transparent); color: var(--snow); border-radius: 12px; padding: 10px 18px; font-weight: 700; }
+.btn:hover { border-color: var(--snow); }
+.btn.primary { background: var(--berry); border-color: var(--berry); color: var(--snow); }
+.btn.primary:hover { background: var(--berry-deep); border-color: var(--berry-deep); }
+.btn:disabled { opacity: .4; cursor: default; }
+.hint { color: var(--on-pine-soft); font-size: 13px; margin: 0; }
+kbd { font-family: var(--body); font-size: 12px; border: 1px solid var(--on-pine-soft); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; color: var(--snow); }
+
+/* Table Topics: candy-cane framed card */
+.cane { border-radius: 24px; padding: 10px; background: repeating-linear-gradient(45deg, var(--berry) 0 16px, var(--snow) 16px 32px); box-shadow: 0 18px 40px -20px rgba(0,0,0,.55); }
+.topic-card { background: var(--snow); color: var(--ink); border-radius: 16px; padding: clamp(22px, 4vw, 40px); display: grid; gap: 10px; }
+.topic-card .lbl { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--berry); font-weight: 700; }
+.topic { font-family: var(--display); font-weight: 800; font-size: clamp(1.6rem, 3.4vw, 2.6rem); line-height: 1.15; margin: 0; text-wrap: balance; color: var(--ink); }
+.topic.empty { color: var(--ink-soft); font-weight: 600; font-style: italic; }
+.rules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.rule { background: color-mix(in srgb, var(--pine-deep) 70%, transparent); border: 1px solid color-mix(in srgb, var(--snow) 25%, transparent); border-radius: 14px; padding: 14px 16px; min-width: 0; }
+.rule h3 { margin: 0 0 4px; font-family: var(--display); font-size: 1.05rem; color: var(--snow); }
+.rule p { margin: 0; color: var(--on-pine-soft); font-size: 14px; }
+.rule .flashword { color: var(--snow); font-weight: 700; text-decoration: underline var(--lamp-red) 2px; text-underline-offset: 3px; }
+.used { color: var(--on-pine-soft); font-size: 14px; margin: 0; }
+
+/* Results + notes */
+.section-h { font-family: var(--display); font-weight: 800; font-size: 1.8rem; margin: 0; color: var(--snow); }
+.podium { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-width: 720px; }
+.podium li { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: center; gap: 14px; background: var(--snow); color: var(--ink); border-radius: 16px; padding: 14px 18px; }
+.podium .rank { font-family: var(--display); font-weight: 800; font-size: 1.6rem; color: var(--ink-soft); display: grid; place-items: center; }
+.podium .name { font-size: 1.25rem; font-weight: 700; overflow-wrap: anywhere; }
+.podium .pts { font-family: var(--display); font-weight: 800; font-size: 1.8rem; font-variant-numeric: tabular-nums; color: var(--holly); }
+.podium li.win { background: var(--berry); color: var(--snow); box-shadow: 0 0 0 4px var(--snow), 0 0 30px rgba(255,255,255,.25); }
+.podium li.win .pts, .podium li.win .rank { color: var(--snow); }
+.podium .star { width: 40px; height: 40px; }
+.notes { display: grid; gap: 18px; max-width: 780px; }
+.notes .card h3 { font-family: var(--display); color: var(--berry); margin: 0 0 8px; font-size: 1.15rem; }
+.notes ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.agenda-wrap { overflow-x: auto; }
+.agenda { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.agenda td { padding: 8px 12px 8px 0; border-bottom: 1px dashed var(--frost); vertical-align: top; }
+.agenda td:first-child { color: var(--holly); font-weight: 700; white-space: nowrap; }
+.agenda td:last-child { color: var(--ink-soft); white-space: nowrap; text-align: right; }
+
+/* Side: timing light + scoreboard */
+.side { min-width: 0; display: grid; align-content: start; gap: 22px; }
+.panel { background: var(--snow); color: var(--ink); border-radius: 20px; padding: 18px; position: relative; box-shadow: 0 18px 40px -20px rgba(0,0,0,.55); }
+.panel::after { content: ""; position: absolute; left: 16px; right: 16px; top: -7px; height: 14px; background: radial-gradient(circle at 10px 10px, var(--snow) 9px, transparent 10px) 0 0 / 26px 14px repeat-x; }
+.panel-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+.panel-h h2 { margin: 0; font-family: var(--display); font-size: 1.15rem; color: var(--berry); }
+.panel .hint { color: var(--ink-soft); }
+.timer { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; }
+.lamps { display: grid; gap: 8px; background: #0b1712; border-radius: 16px; padding: 10px; }
+.lamp { width: 32px; height: 32px; border-radius: 50%; opacity: .16; transition: opacity .2s, box-shadow .2s; }
+.lamp.g { background: var(--lamp-green); color: var(--lamp-green); }
+.lamp.a { background: var(--lamp-amber); color: var(--lamp-amber); }
+.lamp.r { background: var(--lamp-red); color: var(--lamp-red); }
+.timer[data-light="green"] .lamp.g, .timer[data-light="amber"] .lamp.a, .timer[data-light="red"] .lamp.r, .timer[data-light="flash"] .lamp.r { opacity: 1; box-shadow: 0 0 18px currentColor; }
+/* Flashing red at 2:30 in Table Topics: a functional signal, so it flashes even with reduced motion */
+.timer[data-light="flash"] .lamp.r { animation: flash .5s steps(1, end) infinite; }
+.timer[data-light="flash"] .clock { color: var(--lamp-red); animation: flash .5s steps(1, end) infinite; }
+@keyframes flash { 0% { opacity: 1; } 50% { opacity: .12; } }
+.clock { font-family: var(--display); font-weight: 800; font-size: 3rem; line-height: 1; font-variant-numeric: tabular-nums; color: var(--ink); }
+.clock-cap { color: var(--ink-soft); font-size: 13px; margin: 4px 0 10px; }
+.timer-btns { display: flex; gap: 8px; }
+.timer-btns .btn { padding: 7px 14px; font-size: 14px; color: var(--ink); background: var(--snow); border-color: var(--frost); }
+.timer-btns .btn.primary { background: var(--berry); color: var(--snow); border-color: var(--berry); }
+
+.teams { display: grid; gap: 8px; }
+.team { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 6px; align-items: center; background: var(--holly-soft); border-radius: 12px; padding: 6px 6px 6px 10px; }
+.team:nth-child(even) { background: #f8e6e4; }
+.team input { min-width: 0; width: 100%; background: transparent; border: 1px solid transparent; border-radius: 6px; color: var(--ink); font: inherit; font-weight: 700; padding: 4px 6px; }
+.team input:hover { border-color: var(--frost); background: var(--snow); }
+.score { font-family: var(--display); font-weight: 800; font-size: 1.5rem; min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; color: var(--ink); }
+.sbtn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--frost); background: var(--snow); color: var(--ink); font-weight: 800; font-size: 18px; line-height: 1; }
+.sbtn.plus { background: var(--holly); color: var(--snow); border-color: var(--holly); }
+.team-tools { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; }
+.linkbtn { background: none; border: 0; color: var(--ink-soft); font-size: 13px; padding: 4px 0; text-decoration: underline; text-underline-offset: 3px; }
+.linkbtn:hover { color: var(--berry); }
+
+@media (max-width: 960px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .side { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+}
+@media (max-width: 620px) {
+  .options, .rules { grid-template-columns: minmax(0, 1fr); }
+  .holly { width: 48px; height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bulb { animation: none; }
+  .opt, .lamp { transition: none; }
+}
+</style>
+
+<canvas id="snow" aria-hidden="true"></canvas>
+<div class="lights" aria-hidden="true"><svg id="lightsSvg" preserveAspectRatio="none"></svg></div>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg class="holly" viewBox="0 0 64 52" aria-hidden="true">
+        <path d="M30 30 C22 22 14 26 4 18 C8 24 4 28 8 32 C12 30 14 36 18 34 C18 38 24 38 30 30Z" fill="#1e7a4c" stroke="#0a2a1f" stroke-width="1.2"/>
+        <path d="M30 30 C24 31 18 26 8 25" fill="none" stroke="#0a2a1f" stroke-width="1"/>
+        <path d="M34 30 C42 22 50 26 60 18 C56 24 60 28 56 32 C52 30 50 36 46 34 C46 38 40 38 34 30Z" fill="#26905a" stroke="#0a2a1f" stroke-width="1.2"/>
+        <path d="M34 30 C40 31 46 26 56 25" fill="none" stroke="#0a2a1f" stroke-width="1"/>
+        <circle cx="27" cy="34" r="6" fill="#c8262c"/><circle cx="37" cy="34" r="6" fill="#c8262c"/><circle cx="32" cy="27" r="6" fill="#e0353b"/>
+        <circle cx="30" cy="25" r="1.8" fill="#fff" opacity=".8"/><circle cx="25" cy="32" r="1.6" fill="#fff" opacity=".7"/><circle cx="35" cy="32" r="1.6" fill="#fff" opacity=".7"/>
+      </svg>
+      <div>
+        <span class="eyebrow">End-of-year meeting · Team quiz · 30 minutes</span>
+        <h1>Season's <em>Speakings</em></h1>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="Quiz rounds"></nav>
+  </header>
+
+  <main class="stage" id="stage" aria-live="polite"></main>
+
+  <aside class="side">
+    <section class="panel" aria-label="Timer">
+      <div class="panel-h"><h2>Timing light</h2><span class="hint" id="timerMode"></span></div>
+      <div class="timer" id="timer" data-light="off">
+        <div class="lamps" aria-hidden="true"><div class="lamp g"></div><div class="lamp a"></div><div class="lamp r"></div></div>
+        <div>
+          <div class="clock" id="clock">0:30</div>
+          <div class="clock-cap" id="clockCap"></div>
+          <div class="timer-btns">
+            <button class="btn primary" id="tStart" type="button">Start</button>
+            <button class="btn" id="tReset" type="button">Reset</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Scoreboard">
+      <div class="panel-h"><h2>Scoreboard</h2><span class="hint">Click a name to rename</span></div>
+      <div class="teams" id="teams"></div>
+      <div class="team-tools">
+        <button class="linkbtn" id="addTeam" type="button">Add a team</button>
+        <button class="linkbtn" id="resetScores" type="button">Reset scores</button>
+      </div>
+    </section>
+  </aside>
+</div>
+
+<script>
+const ROUNDS = [
+  { short: 'Roles', title: 'Club Roles & Traditions', blurb: 'How well do you know a club meeting?', qs: [
+    { q: 'Which meeting role keeps count of filler words like "um" and "ah"?', o: ['Grammarian', 'Ah-Counter', 'Timer', 'Sergeant at Arms'], a: 1, f: 'Many clubs combine the <b>Ah-Counter</b> with the Grammarian role.' },
+    { q: 'During a prepared speech, what does the green light tell the speaker?', o: ['Start speaking now', 'Time to wrap up', 'You have reached the minimum time', 'You are over time'], a: 2, f: '<b>Green</b> = minimum time reached, amber = approaching the limit, red = maximum time.' },
+    { q: 'How long is a typical Table Topics response?', o: ['30 seconds', '1 to 2 minutes', '3 to 5 minutes', '5 to 7 minutes'], a: 1, f: 'Table Topics speakers aim for <b>1 to 2 minutes</b>. You will try it yourselves in Round 5.' },
+    { q: 'Which club officer looks after the education programme and members\' progress?', o: ['VP Education', 'VP Membership', 'Treasurer', 'VP Public Relations'], a: 0, f: 'The <b>VP Education</b> schedules roles and speeches and tracks Pathways progress.' },
+    { q: 'Who introduces the Word of the Day?', o: ['Ah-Counter', 'General Evaluator', 'Grammarian', 'Table Topicsmaster'], a: 2, f: 'The <b>Grammarian</b> introduces the Word of the Day and notes good use of language.' }
+  ]},
+  { short: 'Pathways', title: 'Pathways', blurb: 'Five levels, many paths, one journey.', qs: [
+    { q: 'How many levels are there in each Pathways path?', o: ['3', '4', '5', '6'], a: 2, f: 'Every path has <b>5 levels</b>, from Mastering Fundamentals to Demonstrating Expertise.' },
+    { q: 'What is the first speech project every member completes?', o: ['Persuasive Speech', 'Ice Breaker', 'Evaluation and Feedback', 'Researching and Presenting'], a: 1, f: 'The <b>Ice Breaker</b> runs 4 to 6 minutes and introduces you to the club.' },
+    { q: 'What is Level 1 called?', o: ['Learning Your Style', 'Building Skills', 'Mastering Fundamentals', 'Demonstrating Expertise'], a: 2, f: 'Level 1 is <b>Mastering Fundamentals</b>. Level 5 is Demonstrating Expertise.' },
+    { q: 'Which of these is a real Pathways path?', o: ['Speech Supremacy', 'Presentation Mastery', 'Podium Power', 'Keynote Kingdom'], a: 1, f: '<b>Presentation Mastery</b> is one of the original paths, alongside Dynamic Leadership and Visionary Communication.' },
+    { q: 'What is the online platform where members work on Pathways called?', o: ['Summit', 'Trailhead', 'Base Camp', 'Speaker Hub'], a: 2, f: 'Members log in to <b>Base Camp</b> to complete projects and track progress.' }
+  ]},
+  { short: 'History', title: 'History & Awards', blurb: 'A century of finding our voices.', qs: [
+    { q: 'In which year was the first Toastmasters club founded?', o: ['1905', '1924', '1946', '1973'], a: 1, f: 'Ralph C. Smedley started the first club at a YMCA in Santa Ana, California, in <b>1924</b>.' },
+    { q: 'What is the highest educational award a member can earn?', o: ['Golden Gavel', 'Master Communicator', 'Distinguished Toastmaster', 'Speaker Laureate'], a: 2, f: '<b>Distinguished Toastmaster (DTM)</b> recognises both communication and leadership.' },
+    { q: 'In which year were women first officially admitted as members?', o: ['1924', '1950', '1973', '1990'], a: 2, f: 'Women became full members in <b>1973</b>.' },
+    { q: 'What title does the winner of the International Speech Contest receive?', o: ['Golden Voice', 'Orator of the Year', 'Grand Speaker', 'World Champion of Public Speaking'], a: 3, f: 'The final takes place each year at the International Convention.' },
+    { q: 'How many goals are there in the Distinguished Club Program?', o: ['5', '8', '10', '12'], a: 2, f: 'Clubs work towards <b>10 goals</b> covering education, membership, training and administration.' }
+  ]},
+  { short: 'Festive', title: 'Festive Fun', blurb: 'Traditions from around the world.', qs: [
+    { q: 'Which country gives London its Trafalgar Square Christmas tree every year?', o: ['Sweden', 'Norway', 'Canada', 'Germany'], a: 1, f: '<b>Norway</b> has sent the tree every year since 1947, as thanks for British support during the Second World War.' },
+    { q: 'Who wrote the words of "Auld Lang Syne", sung at New Year around the world?', o: ['Robert Burns', 'Walter Scott', 'Charles Dickens', 'William Wordsworth'], a: 0, f: '<b>Robert Burns</b> wrote it down in 1788, building on an older folk song.' },
+    { q: 'In "A Christmas Carol", how many spirits visit Scrooge after Marley?', o: ['2', '3', '4', '5'], a: 1, f: '<b>Three</b>: the Ghosts of Christmas Past, Present and Yet to Come.' },
+    { q: 'In Japan, a popular Christmas meal comes from which restaurant chain?', o: ['McDonald\'s', 'Pizza Hut', 'KFC', 'Burger King'], a: 2, f: 'A 1970s <b>KFC</b> campaign made fried chicken a Christmas tradition in Japan.' },
+    { q: 'January is named after which Roman god, who looks both backwards and forwards?', o: ['Jupiter', 'Janus', 'Juno', 'Mars'], a: 1, f: '<b>Janus</b> has two faces. It is a good image for a meeting that reviews the year and plans the next.' }
+  ]},
+  { short: 'Table Topics', title: 'Festive Table Topics Relay', type: 'tt', blurb: 'One speaker per team, one festive topic, 1 to 2 minutes.' }
+];
+
+const TOPICS = [
+  'The best gift I ever received was not a thing.',
+  'Convince us that winter is the best season of the year.',
+  'Raise a toast to the year that is ending.',
+  'Which speaker from history would you invite to your holiday dinner, and why?',
+  'Describe your perfect festive meal as persuasively as you can.',
+  'Pitch a new holiday tradition for our club.',
+  'Introduce Santa as the keynote speaker at our next meeting.',
+  'Deliver your New Year\'s resolution as a motivational speech.',
+  'Thank someone in this room who helped you grow this year.',
+  'What would you tell yourself on the first day of this year?'
+];
+
+const DEFAULT_TEAMS = ['The Ah-Counters', 'Table Topics Titans', 'Gavel Gang', 'Jingle Speakers'];
+const STORE = 'ssq-v1';
+
+const state = { view: 'round', r: 0, i: 0, revealed: false, ttTopic: null, ttUsed: [], teams: DEFAULT_TEAMS.map(n => ({ name: n, score: 0 })) };
+try { const saved = JSON.parse(localStorage.getItem(STORE) || 'null'); if (saved && Array.isArray(saved.teams) && saved.teams.length) state.teams = saved.teams; } catch (e) {}
+function save() { try { localStorage.setItem(STORE, JSON.stringify({ teams: state.teams })); } catch (e) {} }
+
+const $ = id => document.getElementById(id);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const SNOWFLAKE = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#c8262c" stroke-width="1.8" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M3.3 17l17.4-10M12 2l-2.5 2.5M12 2l2.5 2.5M12 22l-2.5-2.5M12 22l2.5-2.5"/></svg>';
+const STAR = '<svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" fill="#fcfbf7"/></svg>';
+
+/* ---------- Tabs ---------- */
+function renderTabs() {
+  const tabs = $('tabs'); tabs.innerHTML = '';
+  ROUNDS.forEach((rd, idx) => {
+    const b = el('button', 'tab', `<span class="n">${idx + 1}</span>${esc(rd.short)}`);
+    b.type = 'button';
+    b.setAttribute('aria-current', state.view === 'round' && state.r === idx ? 'true' : 'false');
+    b.onclick = () => go('round', idx, 0);
+    tabs.append(b);
+  });
+  [['results', 'Results'], ['notes', 'Host notes']].forEach(([v, label]) => {
+    const b = el('button', 'tab', esc(label)); b.type = 'button';
+    b.setAttribute('aria-current', state.view === v ? 'true' : 'false');
+    b.onclick = () => go(v);
+    tabs.append(b);
+  });
+}
+
+function go(view, r = state.r, i = 0) {
+  state.view = view; state.r = r; state.i = i; state.revealed = false;
+  setTimerMode(view === 'round' && ROUNDS[r].type === 'tt' ? 'tt' : 'quiz');
+  render();
+}
+
+/* ---------- Views ---------- */
+function render() {
+  renderTabs();
+  const s = $('stage'); s.innerHTML = '';
+  if (state.view === 'results') return renderResults(s);
+  if (state.view === 'notes') return renderNotes(s);
+  const rd = ROUNDS[state.r];
+  if (rd.type === 'tt') return renderTT(s, rd);
+  renderQuestion(s, rd);
+}
+
+function roundHeader(rd, extra) {
+  const m = el('div', 'meta');
+  m.append(el('h2', 'round-title', `Round ${state.r + 1} · ${esc(rd.title)}<span>${esc(rd.blurb)}</span>`));
+  if (extra) m.append(extra);
+  return m;
+}
+
+function renderQuestion(s, rd) {
+  const q = rd.qs[state.i];
+  const dots = el('div', 'dots');
+  rd.qs.forEach((_, k) => dots.append(el('span', 'dot' + (k < state.i ? ' done' : k === state.i ? ' now' : ''))));
+  dots.setAttribute('aria-label', `Question ${state.i + 1} of ${rd.qs.length}`);
+  s.append(roundHeader(rd, dots));
+
+  const head = el('div', 'card');
+  head.append(el('div', 'qnum', `Question ${state.i + 1} of ${rd.qs.length}`));
+  head.append(el('p', 'qtext', esc(q.q)));
+  s.append(head);
+
+  const ol = el('ol', 'options');
+  q.o.forEach((opt, k) => {
+    let cls = 'opt';
+    if (state.revealed) cls += k === q.a ? ' correct' : ' dim';
+    ol.append(el('li', cls, `<span class="bauble">${'ABCD'[k]}</span><span>${esc(opt)}</span>`));
+  });
+  s.append(ol);
+
+  if (state.revealed) s.append(el('div', 'fact', SNOWFLAKE + `<div>${q.f}</div>`));
+
+  const c = el('div', 'controls');
+  const prev = el('button', 'btn', 'Previous'); prev.type = 'button'; prev.onclick = prevQ; prev.disabled = state.r === 0 && state.i === 0;
+  const rev = el('button', 'btn primary', state.revealed ? 'Hide answer' : 'Reveal answer'); rev.type = 'button'; rev.onclick = toggleReveal;
+  const nextLabel = state.i < rd.qs.length - 1 ? 'Next question' : `Go to Round ${state.r + 2}`;
+  const next = el('button', 'btn', nextLabel); next.type = 'button'; next.onclick = nextQ;
+  c.append(prev, rev, next);
+  s.append(c);
+  s.append(el('p', 'hint', 'Teams write their answer (A to D) before you reveal it. Give 1 point for each correct answer. Keys: <kbd>←</kbd> <kbd>→</kbd> move, <kbd>R</kbd> reveal, <kbd>Space</kbd> timer.'));
+}
+
+function renderTT(s, rd) {
+  s.append(roundHeader(rd));
+  const cane = el('div', 'cane');
+  const card = el('div', 'topic-card');
+  card.append(el('span', 'lbl', state.ttTopic ? `Topic ${state.ttUsed.length} of ${TOPICS.length}` : 'Your topic'));
+  card.append(el('p', 'topic' + (state.ttTopic ? '' : ' empty'), state.ttTopic ? esc(state.ttTopic) : 'Call up the first team\'s speaker, then draw a topic.'));
+  cane.append(card);
+  s.append(cane);
+
+  const c = el('div', 'controls');
+  const draw = el('button', 'btn primary', state.ttTopic ? 'Draw the next topic' : 'Draw a topic'); draw.type = 'button';
+  draw.onclick = drawTopic; draw.disabled = state.ttUsed.length >= TOPICS.length;
+  const restart = el('button', 'btn', 'Put all topics back'); restart.type = 'button';
+  restart.onclick = () => { state.ttUsed = []; state.ttTopic = null; resetTimer(); render(); };
+  const res = el('button', 'btn', 'Go to results'); res.type = 'button'; res.onclick = () => go('results');
+  c.append(draw, restart, res);
+  s.append(c);
+
+  const rules = el('div', 'rules');
+  rules.append(el('div', 'rule', '<h3>Speak</h3><p>The speaker sees the topic for the first time and starts straight away. Press Start when they begin.</p>'));
+  rules.append(el('div', 'rule', '<h3>Time</h3><p>Green at 1:00, amber at 1:30, red at 2:00. At 2:30 the red light <span class="flashword">flashes</span>: stop now, and no timing point.</p>'));
+  rules.append(el('div', 'rule', '<h3>Score</h3><p>Up to 3 points: 1 for finishing between green and flashing red, 1 for festive spirit, 1 for audience applause.</p>'));
+  s.append(rules);
+  if (state.ttUsed.length > 1) s.append(el('p', 'used', 'Already used: ' + state.ttUsed.slice(0, -1).map(esc).join(' · ')));
+}
+
+function renderResults(s) {
+  s.append(el('h2', 'section-h', 'Final standings'));
+  const sorted = state.teams.map(t => ({ ...t })).sort((a, b) => b.score - a.score);
+  const ol = el('ol', 'podium');
+  let rank = 0, last = null;
+  sorted.forEach((t, k) => {
+    if (t.score !== last) { rank = k + 1; last = t.score; }
+    const win = rank === 1 && t.score > 0;
+    ol.append(el('li', win ? 'win' : '', `<span class="rank">${win ? STAR : rank}</span><span class="name">${esc(t.name)}</span><span class="pts">${t.score}</span>`));
+  });
+  s.append(ol);
+  const top = sorted[0];
+  s.append(el('p', 'hint', top && top.score > 0 ? 'Close with a toast to the winning team and to everyone who spoke this year.' : 'Scores appear here as you award points on the scoreboard.'));
+}
+
+function renderNotes(s) {
+  const n = el('div', 'notes');
+  n.innerHTML = `
+    <h2 class="section-h">Host notes</h2>
+    <div class="card">
+      <h3>30-minute run sheet</h3>
+      <div class="agenda-wrap"><table class="agenda"><tbody>
+        <tr><td>0:00</td><td>Welcome. Form teams of 4 to 6 and name them on the scoreboard. Explain the rules.</td><td>3 min</td></tr>
+        <tr><td>0:03</td><td>Round 1: Club Roles &amp; Traditions</td><td>5 min</td></tr>
+        <tr><td>0:08</td><td>Round 2: Pathways</td><td>5 min</td></tr>
+        <tr><td>0:13</td><td>Round 3: History &amp; Awards</td><td>5 min</td></tr>
+        <tr><td>0:18</td><td>Round 4: Festive Fun</td><td>4 min</td></tr>
+        <tr><td>0:22</td><td>Round 5: Festive Table Topics Relay, one speaker per team</td><td>6 min</td></tr>
+        <tr><td>0:28</td><td>Results and a closing toast</td><td>2 min</td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="card">
+      <h3>How to run each question</h3>
+      <ul>
+        <li>Read the question aloud and press Start. Teams have 30 seconds to agree and write a letter.</li>
+        <li>On red, teams hold up their answers. Reveal the answer, read the fun fact and add 1 point to each correct team.</li>
+        <li>In Table Topics the light turns green at 1:00, amber at 1:30, red at 2:00, and flashes red at 2:30.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>What you need</h3>
+      <ul>
+        <li>This page on a projector or shared screen.</li>
+        <li>Paper and a pen for each team, or mini whiteboards.</li>
+        <li>A volunteer Timer who also calls out the light changes, as at a regular meeting.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Before the meeting</h3>
+      <ul>
+        <li>Check the Pathways and History answers against your district's current materials, in case paths or awards have changed.</li>
+        <li>Add a question about your own club, such as its founding year or this year's contest winner, to make it personal.</li>
+      </ul>
+    </div>`;
+  s.append(n);
+}
+
+/* ---------- Navigation ---------- */
+function nextQ() {
+  const rd = ROUNDS[state.r];
+  if (rd.qs && state.i < rd.qs.length - 1) { state.i++; state.revealed = false; resetTimer(); render(); }
+  else if (state.r < ROUNDS.length - 1) go('round', state.r + 1, 0);
+}
+function prevQ() {
+  if (state.i > 0) { state.i--; state.revealed = false; resetTimer(); render(); }
+  else if (state.r > 0) { const p = ROUNDS[state.r - 1]; go('round', state.r - 1, p.qs ? p.qs.length - 1 : 0); }
+}
+function toggleReveal() { state.revealed = !state.revealed; if (state.revealed) pauseTimer(); render(); }
+function drawTopic() {
+  const left = TOPICS.filter(t => !state.ttUsed.includes(t));
+  if (!left.length) return;
+  state.ttTopic = left[Math.floor(Math.random() * left.length)];
+  state.ttUsed.push(state.ttTopic);
+  resetTimer(); render();
+}
+
+/* ---------- Timer (timing light) ---------- */
+const QUIZ_SECONDS = 30;
+const TT = { green: 60, amber: 90, red: 120, flash: 150 };
+const timer = { mode: 'quiz', running: false, start: 0, acc: 0, id: null };
+function elapsed() { return timer.acc + (timer.running ? (Date.now() - timer.start) / 1000 : 0); }
+function fmt(sec) { sec = Math.max(0, sec); const m = Math.floor(sec / 60), r = Math.floor(sec % 60); return `${m}:${String(r).padStart(2, '0')}`; }
+function setTimerMode(mode) {
+  timer.mode = mode; resetTimer();
+  $('timerMode').textContent = mode === 'tt' ? 'Table Topics' : 'Answer time';
+  $('clockCap').textContent = mode === 'tt' ? 'Green 1:00 · Amber 1:30 · Red 2:00 · Flashing red 2:30' : '30 seconds · amber at 10 · red at 0';
+}
+function tick() {
+  const e = elapsed(); let light = 'off', shown;
+  if (timer.mode === 'quiz') {
+    const rem = QUIZ_SECONDS - e;
+    shown = fmt(Math.ceil(rem));
+    if (timer.running || timer.acc > 0) light = rem <= 0 ? 'red' : rem <= 10 ? 'amber' : 'green';
+    if (rem <= 0 && timer.running) { pauseTimer(); timer.acc = QUIZ_SECONDS; light = 'red'; shown = '0:00'; }
+  } else {
+    shown = fmt(e);
+    light = e >= TT.flash ? 'flash' : e >= TT.red ? 'red' : e >= TT.amber ? 'amber' : e >= TT.green ? 'green' : 'off';
+  }
+  $('clock').textContent = shown;
+  $('timer').dataset.light = light;
+  $('tStart').textContent = timer.running ? 'Pause' : (timer.acc > 0 ? 'Resume' : 'Start');
+}
+function startPause() {
+  if (timer.running) { pauseTimer(); return; }
+  if (timer.mode === 'quiz' && timer.acc >= QUIZ_SECONDS) timer.acc = 0;
+  timer.start = Date.now(); timer.running = true;
+  clearInterval(timer.id); timer.id = setInterval(tick, 200); tick();
+}
+function pauseTimer() { if (timer.running) { timer.acc = elapsed(); timer.running = false; } clearInterval(timer.id); tick(); }
+function resetTimer() { clearInterval(timer.id); timer.running = false; timer.acc = 0; tick(); }
+$('tStart').onclick = startPause;
+$('tReset').onclick = resetTimer;
+
+/* ---------- Scoreboard ---------- */
+function renderTeams() {
+  const wrap = $('teams'); wrap.innerHTML = '';
+  state.teams.forEach((t, k) => {
+    const row = el('div', 'team');
+    const name = document.createElement('input');
+    name.id = 'team-name-' + k; name.value = t.name; name.setAttribute('aria-label', `Team ${k + 1} name`);
+    name.oninput = () => { t.name = name.value; save(); if (state.view === 'results') render(); };
+    const minus = el('button', 'sbtn', '−'); minus.type = 'button'; minus.setAttribute('aria-label', `Take a point from ${t.name}`);
+    minus.onclick = () => { t.score = Math.max(0, t.score - 1); save(); renderTeams(); if (state.view === 'results') render(); };
+    const sc = el('span', 'score', String(t.score));
+    const plus = el('button', 'sbtn plus', '+'); plus.type = 'button'; plus.setAttribute('aria-label', `Give a point to ${t.name}`);
+    plus.onclick = () => { t.score++; save(); renderTeams(); if (state.view === 'results') render(); };
+    row.append(name, minus, sc, plus);
+    wrap.append(row);
+  });
+  $('addTeam').disabled = state.teams.length >= 8;
+}
+$('addTeam').onclick = () => {
+  if (state.teams.length >= 8) return;
+  state.teams.push({ name: `Team ${state.teams.length + 1}`, score: 0 }); save(); renderTeams();
+};
+let resetArmed = null;
+$('resetScores').onclick = () => {
+  const b = $('resetScores');
+  if (resetArmed) {
+    clearTimeout(resetArmed); resetArmed = null; b.textContent = 'Reset scores';
+    state.teams.forEach(t => t.score = 0); save(); renderTeams(); if (state.view === 'results') render();
+    return;
+  }
+  b.textContent = 'Click again to set all scores to 0';
+  resetArmed = setTimeout(() => { resetArmed = null; b.textContent = 'Reset scores'; }, 4000);
+};
+
+/* ---------- Keyboard ---------- */
+document.addEventListener('keydown', e => {
+  if (e.target.closest('input, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+  const onQuiz = state.view === 'round' && !ROUNDS[state.r].type;
+  if (e.key === 'ArrowRight' && onQuiz) nextQ();
+  else if (e.key === 'ArrowLeft' && onQuiz) prevQ();
+  else if ((e.key === 'r' || e.key === 'R') && onQuiz) toggleReveal();
+  else if (e.key === ' ' && !e.target.closest('button')) { e.preventDefault(); startPause(); }
+});
+
+/* ---------- Festive lights string ---------- */
+function drawLights() {
+  const svg = $('lightsSvg');
+  const w = Math.max(320, svg.clientWidth || window.innerWidth);
+  const gap = 46, n = Math.ceil(w / gap) + 1, colors = ['#c8262c', '#3cbf83', '#fcfbf7', '#e6b95e'];
+  svg.setAttribute('viewBox', `0 0 ${w} 46`);
+  let wire = 'M0 6', bulbs = '';
+  for (let k = 0; k < n; k++) {
+    const x = k * gap, mx = x + gap / 2;
+    wire += ` Q${mx} 22 ${x + gap} 6`;
+    const c = colors[k % colors.length];
+    bulbs += `<g transform="translate(${mx} 14)"><rect x="-3.5" y="0" width="7" height="6" rx="1.5" fill="#2b3b33"/><ellipse class="bulb" style="animation-delay:${(k % 5) * .45}s" cx="0" cy="15" rx="6.5" ry="10" fill="${c}"/><ellipse cx="-2" cy="11" rx="1.6" ry="3" fill="#fff" opacity=".55"/></g>`;
+  }
+  svg.innerHTML = `<path d="${wire}" fill="none" stroke="#163a2c" stroke-width="2"/>${bulbs}`;
+}
+
+/* ---------- Falling snow ---------- */
+(function snow() {
+  const cv = $('snow'), ctx = cv.getContext('2d');
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let flakes = [], W = 0, H = 0, dpr = 1;
+  function size() {
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const count = Math.round(Math.min(140, W * H / 9000));
+    flakes = Array.from({ length: count }, () => ({ x: Math.random() * W, y: Math.random() * H, r: .8 + Math.random() * 2.6, s: .3 + Math.random() * .9, d: Math.random() * Math.PI * 2 }));
+  }
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,255,255,.8)';
+    for (const f of flakes) {
+      if (!still) { f.y += f.s; f.d += .01; f.x += Math.sin(f.d) * .35; if (f.y > H + 4) { f.y = -4; f.x = Math.random() * W; } }
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
+    }
+    if (!still) requestAnimationFrame(frame);
+  }
+  size(); frame();
+  window.addEventListener('resize', () => { size(); if (still) frame(); drawLights(); });
+})();
+
+drawLights();
+setTimerMode('quiz');
+renderTeams();
+render();
+</script>
